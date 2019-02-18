@@ -137,6 +137,19 @@ export default class Pay extends React.Component {
         });
     }
 
+    onGenerateInvoice(invoiceId) {
+        this.onToggleActions(invoiceId);
+        const {InvoiceActions} = this.props;
+        openConfirm(
+            <div className="font-weight-bold">Are you sure you want to generate an invoice for this payment?</div>, '',
+            true, {ok: 'Yes'}
+        ).then(response => {
+            InvoiceActions.generateInvoice(invoiceId, this.props.selectionKey);
+        }, error => {
+            // Nothing
+        });
+    }
+
     onUpdateInvoiceBatch(ref, invoices) {
         this.onToggleActions(ref);
         let invoice = invoices[0];
@@ -281,15 +294,23 @@ export default class Pay extends React.Component {
                             <div className="section">
                                 <div className="section-title">Payments</div>
 
-                                {isPayAdminOrPM() && !project.archived ? (
-                                    <div className="section-action">
+                                <div className="section-action">
+                                    {isPayAdminOrPM() && !project.archived ? (
                                         <Button size="sm"
                                                 onClick={this.onCreateInvoice.bind(this, INVOICE_TYPE_SALE)}>
                                             <Icon name="add"/> Add payment
                                         </Button>
-                                    </div>
-                                ) : null}
+                                    ) : null}
+                                    <span> </span>
 
+                                    {isPayAdmin() && !project.archived ? (
+                                        <Button size="sm"
+                                                onClick={this.onCreateInvoice.bind(this, INVOICE_TYPE_SALE)}>
+                                            <Icon name="add"/> Add Credit Nota
+                                        </Button>
+
+                                    ) : null}
+                                </div>
                                 {payments.length ? (
                                     <div className="payment-list table-responsive">
                                         <Table striped>
@@ -309,10 +330,14 @@ export default class Pay extends React.Component {
                                                         <td style={{width: "35%"}}>{invoice.title}</td>
                                                         <td style={{width: "20%"}}>{moment.utc(invoice.issued_at).format('DD/MMM/YYYY')}</td>
                                                         <td style={{width: "10%"}}>
-                                                            <a href={`${ENDPOINT_INVOICES}${invoice.id}/download/?format=pdf`}
-                                                               target="_blank">
-                                                                {invoice.number}
-                                                            </a>
+                                                            {invoice.finalized === 'false' ? (
+                                                                <div>€{invoice.amount}</div>
+                                                            ) : null}
+                                                            {invoice.number ? (
+                                                                <a href={`${ENDPOINT_INVOICES}${invoice.id}/download/?format=pdf`}
+                                                                   target="_blank">
+                                                                    {invoice.number}
+                                                                </a>) : null}
                                                         </td>
                                                         <td style={{width: "15%"}}>
                                                             {invoice.total_amount === invoice.amount ? (
@@ -386,16 +411,22 @@ export default class Pay extends React.Component {
                                                                                                 onClick={this.onDeleteInvoice.bind(this, invoice.id)}>
                                                                                             Delete payment
                                                                                         </Button>
-                                                                                        {isPayAdmin() && !invoice.paid ? (
+                                                                                        {isPayAdmin() && invoice.number && !invoice.paid ? (
                                                                                             <Button size="sm"
                                                                                                     onClick={this.onMarkPaid.bind(this, invoice.id)}>
                                                                                                 Mark as paid
                                                                                             </Button>
                                                                                         ) : null}
-                                                                                        {isPayAdmin() && !invoice.paid ? (
+                                                                                        {isPayAdmin() && invoice.number && !invoice.paid ? (
                                                                                             <Button size="sm"
                                                                                                     onClick={this.onMarkArchived.bind(this, invoice.id)}>
                                                                                                 Mark as archived
+                                                                                            </Button>
+                                                                                        ) : null}
+                                                                                        {isPayAdmin() && !invoice.finalized && !invoice.number ? (
+                                                                                            <Button size="sm"
+                                                                                                    onClick={this.onGenerateInvoice.bind(this, invoice.id)}>
+                                                                                                Generate Invoice
                                                                                             </Button>
                                                                                         ) : null}
                                                                                     </div>

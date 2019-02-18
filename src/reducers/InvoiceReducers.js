@@ -40,6 +40,18 @@ function archived(state = {}, action) {
     }
 }
 
+function generated(state = {}, action) {
+    let targetKey = action.target || action.id || 'default';
+    let newState = {};
+    switch (action.type) {
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
+            newState[targetKey] = false;
+            return {...state, ...newState};
+        default:
+            return state;
+    }
+}
+
 function ids(state = {}, action) {
     let selectionKey = action.selection || 'default';
     let targetKey = action.target || action.id || 'default';
@@ -82,6 +94,16 @@ function ids(state = {}, action) {
             }
             return state;
         case InvoiceActions.ARCHIVE_INVOICE_SUCCESS:
+            if (state[targetKey]) {
+                let currentList = [...state[targetKey]];
+                let idx = currentList.indexOf(action.id);
+                if (idx > -1) {
+                    newState[targetKey] = [...currentList.slice(0, idx), ...currentList.slice(idx + 1)];
+                    return {...state, ...newState};
+                }
+            }
+            return state;
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
             if (state[targetKey]) {
                 let currentList = [...state[targetKey]];
                 let idx = currentList.indexOf(action.id);
@@ -343,6 +365,7 @@ const Invoice = combineReducers({
     created,
     deleted,
     archived,
+    generated,
     ids,
     invoices,
     isSaving,
