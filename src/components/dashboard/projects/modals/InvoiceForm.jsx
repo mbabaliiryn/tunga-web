@@ -9,7 +9,7 @@ import DateTimePicker from "../../../core/DateTimePicker";
 import UserSelector from "../../../core/UserSelector";
 import MilestoneSelector from "../../../core/MilestoneSelector";
 
-import {INVOICE_TYPE_SALE} from "../../../../actions/utils/api";
+import {INVOICE_TYPE_CREDIT_NOTA, INVOICE_TYPE_SALE, INVOICE_TYPES} from "../../../../actions/utils/api";
 import IconButton from "../../../core/IconButton";
 
 export default class InvoiceForm extends React.Component {
@@ -33,7 +33,7 @@ export default class InvoiceForm extends React.Component {
         this.state = {
             invoice: props.invoice || {},
             payouts: props.payouts || {0: {}},
-        }
+        };
     }
 
     onChangeValue(key, value) {
@@ -43,14 +43,14 @@ export default class InvoiceForm extends React.Component {
     }
 
     onChangeField(key, e) {
-        this.onChangeValue(key, e.target.value)
+        this.onChangeValue(key, e.target.value);
     }
 
     onSave = (e) => {
         e.preventDefault();
 
-        if(this.props.proceed) {
-            if(this.props.invoice.type === INVOICE_TYPE_SALE) {
+        if (this.props.proceed) {
+            if (this.props.invoice.type === INVOICE_TYPE_SALE || INVOICE_TYPE_CREDIT_NOTA) {
                 this.props.proceed(this.state.invoice);
             } else {
                 this.props.proceed({invoice: this.state.invoice, payouts: this.state.payouts});
@@ -61,7 +61,7 @@ export default class InvoiceForm extends React.Component {
     onCancel = (e) => {
         e.preventDefault();
 
-        if(this.props.cancel) {
+        if (this.props.cancel) {
             this.props.cancel(this.state.plan);
         }
     };
@@ -85,18 +85,18 @@ export default class InvoiceForm extends React.Component {
         return (
             <Row key={idx}>
                 <Col sm="8">
-                    {idx === 0?(
+                    {idx === 0 ? (
                         <label>Developer</label>
-                    ):null}
+                    ) : null}
                     <UserSelector max={1} variant="bottom"
-                                  selected={payout.user?[payout.user]:[]}
+                                  selected={payout.user ? [payout.user] : []}
                                   onChange={users => this.onPayoutUpdate(idx, 'user', users[0])}/>
                 </Col>
                 <Col sm="4">
                     <FormGroup>
-                        {idx === 0?(
+                        {idx === 0 ? (
                             <label>Amount in EUR</label>
-                        ):null}
+                        ) : null}
                         <Input type="number"
                                value={payout.amount || null}
                                onChange={e => this.onPayoutUpdate(idx, 'amount', e.target.value)}
@@ -106,14 +106,14 @@ export default class InvoiceForm extends React.Component {
                     </FormGroup>
                 </Col>
             </Row>
-        )
+        );
     }
 
     render() {
         return (
             <form onSubmit={this.onSave.bind(this)} className="invoice-form">
                 <FormGroup>
-                    <label>{this.props.invoice.type === INVOICE_TYPE_SALE?'Payment':'Payout'} title</label>
+                    <label>{INVOICE_TYPES[this.props.invoice.type]} title</label>
                     <div className="text text-sm">Don't include the project title in this title</div>
                     <Input value={this.state.invoice.title}
                            onChange={this.onChangeField.bind(this, 'title')}
@@ -122,25 +122,29 @@ export default class InvoiceForm extends React.Component {
                 <FormGroup>
                     <label>Invoice date</label>
                     <DateTimePicker calendar={true} time={false}
-                                    value={this.state.invoice.issued_at?new Date(this.state.invoice.issued_at):null}
-                                    onChange={(issued_at) => { this.onChangeValue('issued_at', moment.utc(issued_at).format())}}
+                                    value={this.state.invoice.issued_at ? new Date(this.state.invoice.issued_at) : null}
+                                    onChange={(issued_at) => {
+                                        this.onChangeValue('issued_at', moment.utc(issued_at).format());
+                                    }}
                                     required/>
                 </FormGroup>
                 <FormGroup>
                     <label>Milestone</label>
                     <MilestoneSelector variant="bottom" max={1}
-                                       filters={{project: this.props.project?this.props.project.id:null}}
-                                       selected={this.state.invoice.milestone?[this.state.invoice.milestone]:[]} onChange={milestones => this.onChangeValue('milestone', milestones[0] || null)}/>
+                                       filters={{project: this.props.project ? this.props.project.id : null}}
+                                       selected={this.state.invoice.milestone ? [this.state.invoice.milestone] : []}
+                                       onChange={milestones => this.onChangeValue('milestone', milestones[0] || null)}/>
                 </FormGroup>
-                {this.state.invoice.type === INVOICE_TYPE_SALE?(
+                {this.state.invoice.type === INVOICE_TYPE_SALE || INVOICE_TYPE_CREDIT_NOTA ? (
                     <FormGroup>
                         <label>Amount in EUR</label>
                         <Input type="number"
                                value={this.state.invoice.amount}
-                               onChange={this.onChangeField.bind(this, 'amount')} step="0.01" placeholder="Amount in Euros"
+                               onChange={this.onChangeField.bind(this, 'amount')} step="0.01"
+                               placeholder="Amount in Euros"
                                required/>
                     </FormGroup>
-                ):(
+                ) : (
                     <div>
                         {Object.keys(this.state.payouts).map(idx => {
                             return (
@@ -153,7 +157,8 @@ export default class InvoiceForm extends React.Component {
                     </div>
                 )}
                 <FormGroup>
-                    <Button type="button" variant="secondary" className="float-left" onClick={this.onCancel.bind(this)}>Cancel</Button>
+                    <Button type="button" variant="secondary" className="float-left"
+                            onClick={this.onCancel.bind(this)}>Cancel</Button>
                     <Button type="submit" className="float-right">Save</Button>
                 </FormGroup>
             </form>

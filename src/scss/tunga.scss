@@ -1815,6 +1815,7 @@ table {
         }
 
         .payment-list  {
+            display: initial;
             table {
                 &.table th, &.table td {
                     padding: 5px 15px;
