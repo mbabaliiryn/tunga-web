@@ -24,8 +24,7 @@ export default () => {
             perks: [
                 {service: 'Frontend development', fee: "€26,-"},
                 {service: 'Backend development/Devops', fee: "€29,-"},
-                {service: 'Specialty skill (rates start at)', fee: "€30,-"},
-                {service: 'Data Scientist/Solutions Architect', fee: "€30,-"},
+                {service: 'Data Scientist/Solutions Architect', fee: "€32,-"},
                 {service: 'Project management', fee: "€40,-"},
                 {service: 'Consultancy/Technical analysis', fee: "€45,-"},
             ],
@@ -44,7 +43,7 @@ export default () => {
                 {service: 'Frontend development', fee: "€26,-"},
                 {service: 'Backend development/Devops', fee: "€29,-"},
                 {service: 'Full stack development', fee: "€26,-"},
-                {service: 'Specialty skill', fee: "€30,-"},
+                {service: 'Data Scientist/Solutions Architect', fee: "€32,-"},
             ],
             disclaimer: '* all above prices are hourly rates',
         },
