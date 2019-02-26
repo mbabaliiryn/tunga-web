@@ -77,6 +77,9 @@ function ids(state = {}, action) {
         case InvoiceActions.CREATE_INVOICE_SUCCESS:
             newState[targetKey] = [action.invoice.id, ...(state[targetKey] || [])];
             return {...state, ...newState};
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
+            newState[targetKey] = [action.id, ...(state[targetKey] || [])];
+            return {...state, ...newState};
         case InvoiceActions.CREATE_INVOICE_BATCH_SUCCESS:
             newState[targetKey] = [
                 ...state[targetKey],
@@ -103,16 +106,6 @@ function ids(state = {}, action) {
                 }
             }
             return state;
-        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
-            if (state[targetKey]) {
-                let currentList = [...state[targetKey]];
-                let idx = currentList.indexOf(action.id);
-                if (idx > -1) {
-                    newState[targetKey] = [...currentList.slice(0, idx), ...currentList.slice(idx + 1)];
-                    return {...state, ...newState};
-                }
-            }
-            return state;
         default:
             return state;
     }
@@ -130,6 +123,7 @@ function invoices(state = {}, action) {
         case InvoiceActions.CREATE_INVOICE_SUCCESS:
         case InvoiceActions.RETRIEVE_INVOICE_SUCCESS:
         case InvoiceActions.UPDATE_INVOICE_SUCCESS:
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
         case InvoiceActions.PAY_INVOICE_SUCCESS:
             let new_invoice = {};
             new_invoice[action.invoice.id] = action.invoice;
@@ -159,6 +153,7 @@ function isSaving(state = {}, action) {
         case InvoiceActions.CREATE_INVOICE_SUCCESS:
         case InvoiceActions.CREATE_INVOICE_FAILED:
         case InvoiceActions.UPDATE_INVOICE_SUCCESS:
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
         case InvoiceActions.UPDATE_INVOICE_FAILED:
         case InvoiceActions.PAY_INVOICE_SUCCESS:
         case InvoiceActions.PAY_INVOICE_FAILED:
@@ -178,6 +173,7 @@ function isSaved(state = {}, action) {
     switch (action.type) {
         case InvoiceActions.CREATE_INVOICE_SUCCESS:
         case InvoiceActions.UPDATE_INVOICE_SUCCESS:
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
         case InvoiceActions.PAY_INVOICE_SUCCESS:
             newState[targetKey] = true;
             if (action.id) {
@@ -335,6 +331,11 @@ function errors(state = {}, action) {
             return {...state, update: action.error};
         case InvoiceActions.UPDATE_INVOICE_START:
         case InvoiceActions.UPDATE_INVOICE_SUCCESS:
+            return {...state, update: null};
+        case InvoiceActions.GENERATE_INVOICE_FAILED:
+            return {...state, update: action.error};
+        case InvoiceActions.GENERATE_INVOICE_START:
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
             return {...state, update: null};
         case InvoiceActions.RETRIEVE_INVOICE_FAILED:
             return {...state, retrieve: action.error};

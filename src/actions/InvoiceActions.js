@@ -388,8 +388,8 @@ export function generateInvoice(id, target) {
         dispatch(generateInvoiceStart(id));
 
         axios.post(`${ENDPOINT_INVOICES}${id}/generate/`,)
-            .then(function () {
-                dispatch(generateInvoiceSuccess(id, target));
+            .then(function (response) {
+                dispatch(generateInvoiceSuccess(response.data, id, target));
             }).catch(function (response) {
             dispatch(generateInvoiceFailed(response.data, id, target));
         });
@@ -404,9 +404,10 @@ export function generateInvoiceStart(id, target) {
     };
 }
 
-export function generateInvoiceSuccess(id, target) {
+export function generateInvoiceSuccess(invoice, id, target) {
     return {
         type: GENERATE_INVOICE_SUCCESS,
+        invoice,
         id,
         target
     };
