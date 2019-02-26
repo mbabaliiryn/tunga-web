@@ -77,9 +77,6 @@ function ids(state = {}, action) {
         case InvoiceActions.CREATE_INVOICE_SUCCESS:
             newState[targetKey] = [action.invoice.id, ...(state[targetKey] || [])];
             return {...state, ...newState};
-        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
-            newState[targetKey] = [action.id, ...(state[targetKey] || [])];
-            return {...state, ...newState};
         case InvoiceActions.CREATE_INVOICE_BATCH_SUCCESS:
             newState[targetKey] = [
                 ...state[targetKey],
