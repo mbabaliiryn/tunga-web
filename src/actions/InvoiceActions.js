@@ -28,6 +28,9 @@ export const PAY_INVOICE_FAILED = 'PAY_INVOICE_FAILED';
 export const ARCHIVE_INVOICE_SUCCESS = 'ARCHIVE_INVOICE_SUCCESS';
 export const ARCHIVE_INVOICE_START = 'ARCHIVE_INVOICE_START';
 export const ARCHIVE_INVOICE_FAILED = 'ARCHIVE_INVOICE_FAILED';
+export const GENERATE_INVOICE_SUCCESS = 'GENERATE_INVOICE_SUCCESS';
+export const GENERATE_INVOICE_START = 'GENERATE_INVOICE_START';
+export const GENERATE_INVOICE_FAILED = 'GENERATE_INVOICE_FAILED';
 
 export function createInvoice(invoice, target) {
     return dispatch => {
@@ -374,6 +377,45 @@ export function archiveInvoiceSuccess(id, target) {
 export function archiveInvoiceFailed(error, id, target) {
     return {
         type: ARCHIVE_INVOICE_FAILED,
+        error,
+        id,
+        target
+    };
+}
+
+export function generateInvoice(id, target) {
+    return dispatch => {
+        dispatch(generateInvoiceStart(id));
+
+        axios.post(`${ENDPOINT_INVOICES}${id}/generate/`,)
+            .then(function (response) {
+                dispatch(generateInvoiceSuccess(response.data, id, target));
+            }).catch(function (response) {
+            dispatch(generateInvoiceFailed(response.data, id, target));
+        });
+    };
+}
+
+export function generateInvoiceStart(id, target) {
+    return {
+        type: GENERATE_INVOICE_START,
+        id,
+        target
+    };
+}
+
+export function generateInvoiceSuccess(invoice, id, target) {
+    return {
+        type: GENERATE_INVOICE_SUCCESS,
+        invoice,
+        id,
+        target
+    };
+}
+
+export function generateInvoiceFailed(error, id, target) {
+    return {
+        type: GENERATE_INVOICE_FAILED,
         error,
         id,
         target

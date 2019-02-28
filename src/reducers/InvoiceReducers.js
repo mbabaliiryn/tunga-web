@@ -40,6 +40,18 @@ function archived(state = {}, action) {
     }
 }
 
+function generated(state = {}, action) {
+    let targetKey = action.target || action.id || 'default';
+    let newState = {};
+    switch (action.type) {
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
+            newState[targetKey] = false;
+            return {...state, ...newState};
+        default:
+            return state;
+    }
+}
+
 function ids(state = {}, action) {
     let selectionKey = action.selection || 'default';
     let targetKey = action.target || action.id || 'default';
@@ -108,6 +120,7 @@ function invoices(state = {}, action) {
         case InvoiceActions.CREATE_INVOICE_SUCCESS:
         case InvoiceActions.RETRIEVE_INVOICE_SUCCESS:
         case InvoiceActions.UPDATE_INVOICE_SUCCESS:
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
         case InvoiceActions.PAY_INVOICE_SUCCESS:
             let new_invoice = {};
             new_invoice[action.invoice.id] = action.invoice;
@@ -137,6 +150,7 @@ function isSaving(state = {}, action) {
         case InvoiceActions.CREATE_INVOICE_SUCCESS:
         case InvoiceActions.CREATE_INVOICE_FAILED:
         case InvoiceActions.UPDATE_INVOICE_SUCCESS:
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
         case InvoiceActions.UPDATE_INVOICE_FAILED:
         case InvoiceActions.PAY_INVOICE_SUCCESS:
         case InvoiceActions.PAY_INVOICE_FAILED:
@@ -156,6 +170,7 @@ function isSaved(state = {}, action) {
     switch (action.type) {
         case InvoiceActions.CREATE_INVOICE_SUCCESS:
         case InvoiceActions.UPDATE_INVOICE_SUCCESS:
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
         case InvoiceActions.PAY_INVOICE_SUCCESS:
             newState[targetKey] = true;
             if (action.id) {
@@ -314,6 +329,11 @@ function errors(state = {}, action) {
         case InvoiceActions.UPDATE_INVOICE_START:
         case InvoiceActions.UPDATE_INVOICE_SUCCESS:
             return {...state, update: null};
+        case InvoiceActions.GENERATE_INVOICE_FAILED:
+            return {...state, update: action.error};
+        case InvoiceActions.GENERATE_INVOICE_START:
+        case InvoiceActions.GENERATE_INVOICE_SUCCESS:
+            return {...state, update: null};
         case InvoiceActions.RETRIEVE_INVOICE_FAILED:
             return {...state, retrieve: action.error};
         case InvoiceActions.RETRIEVE_INVOICE_START:
@@ -343,6 +363,7 @@ const Invoice = combineReducers({
     created,
     deleted,
     archived,
+    generated,
     ids,
     invoices,
     isSaving,

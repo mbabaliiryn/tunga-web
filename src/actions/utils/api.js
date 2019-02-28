@@ -6,7 +6,7 @@ axios.defaults.xsrfHeaderName = 'X-CSRFToken';
 axios.defaults.withCredentials = true;
 
 let BACKEND_PATH =
-    __BACKEND_ROOT_URL__ || (__PRODUCTION__ ? (/butterflyworks\.org/ig.test(window.location.hostname)?'https://tunga.io/':'/') : 'http://sandbox.tunga.io/');
+    __BACKEND_ROOT_URL__ || (__PRODUCTION__ ? (/butterflyworks\.org/ig.test(window.location.hostname) ? 'https://tunga.io/' : '/') : 'http://sandbox.tunga.io/');
 let API_PATH = 'api/';
 let SOCIAL_LOGIN_PATH = 'accounts/social/';
 
@@ -100,23 +100,23 @@ export function flattenJson(jsonData, key) {
     let flattenedData = {};
 
     if (jsonData !== null && jsonData !== undefined) {
-        if(jsonData instanceof File) {
-            if(key) {
+        if (jsonData instanceof File) {
+            if (key) {
                 let flattenedUpdate = {};
                 flattenedUpdate[key] = jsonData;
                 flattenedData = {...flattenedData, ...flattenedUpdate};
             }
-        } else if(Array.isArray(jsonData)) {
-            if(key && jsonData.length) {
+        } else if (Array.isArray(jsonData)) {
+            if (key && jsonData.length) {
                 jsonData.forEach((item, idx) => {
                     flattenedData = {...flattenedData, ...flattenJson(item, `${key}[${idx}]`)};
                 });
             }
         } else if (typeof jsonData === 'object') {
             Object.keys(jsonData).forEach(nestedKey => {
-                flattenedData = {...flattenedData, ...flattenJson(jsonData[nestedKey], `${key?`${key}${key.endsWith(']')?'':'.'}`:''}${nestedKey}`)};
+                flattenedData = {...flattenedData, ...flattenJson(jsonData[nestedKey], `${key ? `${key}${key.endsWith(']') ? '' : '.'}` : ''}${nestedKey}`)};
             });
-        } else if(key) {
+        } else if (key) {
             let flattenedUpdate = {};
             flattenedUpdate[key] = jsonData;
             flattenedData = {...flattenedData, ...flattenedUpdate};
@@ -136,15 +136,15 @@ export function composeFormData(jsonData) {
 
 export function cleanSkills(skills) {
     let cleanedData = [];
-    if(Array.isArray(skills)) {
+    if (Array.isArray(skills)) {
         skills.forEach(skill => {
             cleanedData = [...cleanedData, ...cleanSkills(skill)];
         });
-    } else if(typeof skills === 'object') {
+    } else if (typeof skills === 'object') {
         cleanedData = [...cleanedData, skills];
-    } else if(typeof skills === 'string'){
+    } else if (typeof skills === 'string') {
         skills.split(',').forEach(skill => {
-            if(skill) {
+            if (skill) {
                 cleanedData = [...cleanedData, {name: skill.trim()}];
             }
         });
@@ -172,7 +172,6 @@ export const PROJECT_DURATION_PERMANENT = 'permanent';
 
 export const PROJECT_STAGE_OPPORTUNITY = 'opportunity';
 export const PROJECT_STAGE_ACTIVE = 'active';
-
 
 
 export const DOC_TYPE_REQUIREMENTS = 'requirements';
@@ -213,7 +212,7 @@ export const REPORT_STATUS_BEHIND_BUT_PROGRESSING = 'behind_progressing';
 export const REPORT_STATUS_BEHIND_AND_STUCK = 'behind_stuck';
 
 export const REPORT_STATUSES = [
-    [REPORT_STATUS_ON_SCHEDULE,'On schedule'],
+    [REPORT_STATUS_ON_SCHEDULE, 'On schedule'],
     [REPORT_STATUS_BEHIND_AND_STUCK, 'Behind and Stuck'],
     [REPORT_STATUS_BEHIND_BUT_PROGRESSING, 'Behind but Progressing'],
 ];
@@ -263,6 +262,13 @@ export const SLACK_SHARE_EVENTS = [
 
 export const INVOICE_TYPE_SALE = 'sale';
 export const INVOICE_TYPE_PURCHASE = 'purchase';
+export const INVOICE_TYPE_CREDIT_NOTA = 'credit_nota';
+export const INVOICE_TYPES = {
+    sale: 'Payment',
+    purchase: 'Payout',
+    credit_nota: 'Credit Nota',
+};
+
 
 export const PAYMENT_TYPE_SALE = 'sale';
 export const PAYMENT_TYPE_PURCHASE = 'purchase';
@@ -292,7 +298,7 @@ export const CHANNEL_TYPES = {
 export function objectToQueryString(obj) {
     let qs = _.reduce(
         obj,
-        function(result, value, key) {
+        function (result, value, key) {
             return !_.isNull(value) && !_.isUndefined(value)
                 ? (result += key + '=' + value + '&')
                 : result;

@@ -1,5 +1,8 @@
 export function filterInvoices(invoices, type) {
-    return invoices.filter(invoice => invoice.type === type)
+    return invoices.filter(invoice => invoice.type === type );
+}
+export function filterMultiInvoicesTypes(invoices, type, type1) {
+    return invoices.filter(invoice => invoice.type === type || type1);
 }
 
 export function sumInvoices(invoices) {

@@ -13,12 +13,30 @@ import PaymentOptions from "../../dashboard/payments/PaymentOptions";
 import InvoiceDetails from "../../dashboard/payments/InvoiceDetails";
 
 import {
-    isAdmin, isAdminOrPM, isClient, isDev, isDevOrClient, getUser, isPayAdmin,
-    isPayAdminOrPM, isProjectClient
+    getUser,
+    isAdmin,
+    isClient,
+    isDev,
+    isDevOrClient,
+    isPayAdmin,
+    isPayAdminOrPM,
+    isProjectClient
 } from "../../utils/auth";
 import {openConfirm, openModal} from "../../core/utils/modals";
-import {ENDPOINT_INVOICES, INVOICE_TYPE_PURCHASE, INVOICE_TYPE_SALE} from "../../../actions/utils/api";
-import {batchInvoices, sumInvoices, filterInvoices} from "../../utils/payments";
+import {
+    ENDPOINT_INVOICES,
+    INVOICE_TYPE_CREDIT_NOTA,
+    INVOICE_TYPE_PURCHASE,
+    INVOICE_TYPE_SALE,
+    INVOICE_TYPES
+} from "../../../actions/utils/api";
+import {
+    batchInvoices,
+    filterInvoices,
+    filterInvoicesAndCreditNota,
+    filterMultiInvoicesTypes,
+    sumInvoices
+} from "../../utils/payments";
 import {parsePaymentObject} from "../../utils/stripe";
 
 
@@ -38,7 +56,7 @@ export default class Pay extends React.Component {
     onCreateInvoice(type) {
         const {project, InvoiceActions} = this.props;
         openModal(<InvoiceForm invoice={{type}}
-                               project={project}/>, `Add ${type === INVOICE_TYPE_SALE ? 'Payment' : 'Payout'}`).then(data => {
+                               project={project}/>, `Add ${INVOICE_TYPES[type]}`).then(data => {
             if (data.type === INVOICE_TYPE_SALE) {
                 InvoiceActions.createInvoice(
                     {
@@ -46,6 +64,16 @@ export default class Pay extends React.Component {
                         milestone: data.milestone ? {id: data.milestone.id} : null,
                         user: {id: project.owner ? project.owner.id : project.user.id},
                         project: {id: project.id}
+                    },
+                    this.props.selectionKey
+                );
+            } else if (data.type === INVOICE_TYPE_CREDIT_NOTA) {
+                InvoiceActions.createInvoice(
+                    {
+                        ...data,
+                        milestone: data.milestone ? {id: data.milestone.id} : null,
+                        user: {id: project.owner ? project.owner.id : project.user.id},
+                        project: {id: project.id},
                     },
                     this.props.selectionKey
                 );
@@ -76,6 +104,7 @@ export default class Pay extends React.Component {
 
         });
     }
+
 
     onUpdateInvoice(invoice) {
         this.onToggleActions(invoice.id);
@@ -132,6 +161,19 @@ export default class Pay extends React.Component {
             true, {ok: 'Yes'}
         ).then(response => {
             InvoiceActions.archiveInvoice(invoiceId, this.props.selectionKey);
+        }, error => {
+            // Nothing
+        });
+    }
+
+    onGenerateInvoice(invoiceId) {
+        this.onToggleActions(invoiceId);
+        const {InvoiceActions} = this.props;
+        openConfirm(
+            <div className="font-weight-bold">Are you sure you want to generate an invoice for this payment?</div>, '',
+            true, {ok: 'Yes'}
+        ).then(response => {
+            InvoiceActions.generateInvoice(invoiceId, this.props.selectionKey);
         }, error => {
             // Nothing
         });
@@ -266,7 +308,7 @@ export default class Pay extends React.Component {
 
     render() {
         const {project, invoices, isSaving} = this.props,
-            payments = filterInvoices(invoices, INVOICE_TYPE_SALE),
+            payments = filterMultiInvoicesTypes(invoices, INVOICE_TYPE_SALE, INVOICE_TYPE_CREDIT_NOTA),
             payouts = filterInvoices(invoices, INVOICE_TYPE_PURCHASE);
 
         let batchPayouts = batchInvoices(payouts);
@@ -281,17 +323,25 @@ export default class Pay extends React.Component {
                             <div className="section">
                                 <div className="section-title">Payments</div>
 
-                                {isPayAdminOrPM() && !project.archived ? (
-                                    <div className="section-action">
+                                <div className="section-action">
+                                    {isPayAdminOrPM() && !project.archived ? (
                                         <Button size="sm"
                                                 onClick={this.onCreateInvoice.bind(this, INVOICE_TYPE_SALE)}>
                                             <Icon name="add"/> Add payment
                                         </Button>
-                                    </div>
-                                ) : null}
+                                    ) : null}
+                                    <span> </span>
 
+                                    {isPayAdmin() && !project.archived ? (
+                                        <Button size="sm"
+                                                onClick={this.onCreateInvoice.bind(this, INVOICE_TYPE_CREDIT_NOTA)}>
+                                            <Icon name="add"/> Add credit nota
+                                        </Button>
+
+                                    ) : null}
+                                </div>
                                 {payments.length ? (
-                                    <div className="payment-list">
+                                    <div className="payment-list table-responsive">
                                         <Table striped>
                                             <thead>
                                             <tr>
@@ -306,48 +356,49 @@ export default class Pay extends React.Component {
                                             {payments.map(invoice => {
                                                 return (
                                                     <tr key={invoice.id}>
-                                                        <td>{invoice.title}</td>
-                                                        <td>{moment.utc(invoice.issued_at).format('DD/MMM/YYYY')}</td>
-                                                        <td>
-                                                            <a href={`${ENDPOINT_INVOICES}${invoice.id}/download/?format=pdf`}
-                                                               target="_blank">
-                                                                {invoice.number}
-                                                            </a>
+                                                        <td style={{width: "35%"}}>{invoice.title}</td>
+                                                        <td style={{width: "20%"}}>{moment.utc(invoice.issued_at).format('DD/MMM/YYYY')}</td>
+                                                        <td style={{width: "10%"}}>
+                                                            {invoice.number || invoice.finalized === true ? (
+                                                                <a href={`${ENDPOINT_INVOICES}${invoice.id}/download/?format=pdf`}
+                                                                   target="_blank">
+                                                                    {invoice.number}
+                                                                </a>) : null}
                                                         </td>
-                                                        <td>
+                                                        <td style={{width: "15%"}}>
                                                             {invoice.total_amount === invoice.amount ? (
-                                                                <div>€{invoice.amount}</div>
+                                                                <div>{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.amount}</p>):(<p>€{invoice.amount}</p>)}</div>
                                                             ) : (
                                                                 <div>
                                                                     <div className="clearfix">
                                                                         <div className="float-left">Fee:</div>
                                                                         <div
-                                                                            className="float-right">€{invoice.amount}</div>
+                                                                            className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.amount}</p>):(<p>€{invoice.amount}</p>)}</div>
                                                                     </div>
                                                                     {Math.round(invoice.processing_fee) ? (
                                                                         <div className="clearfix">
                                                                             <div className="float-left">Processing:
                                                                             </div>
                                                                             <div
-                                                                                className="float-right">€{invoice.processing_fee}</div>
+                                                                                className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.processing_fee}</p>):(<p>€{invoice.processing_fee}</p>)}</div>
                                                                         </div>
                                                                     ) : null}
                                                                     {Math.round(invoice.tax_amount) ? (
                                                                         <div className="clearfix">
                                                                             <div className="float-left">VAT:</div>
                                                                             <div
-                                                                                className="float-right">€{invoice.tax_amount}</div>
+                                                                                className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.tax_amount}</p>):(<p>€{invoice.tax_amount}</p>)}</div>
                                                                         </div>
                                                                     ) : null}
                                                                     <div className="subtotal">
                                                                         <div className="float-left">Total:</div>
                                                                         <div
-                                                                            className="float-right">€{invoice.total_amount}</div>
+                                                                            className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.tax_amount}</p>):(<p>€{invoice.tax_amount}</p>)}</div>
                                                                     </div>
                                                                 </div>
                                                             )}
                                                         </td>
-                                                        <td>
+                                                        <td style={{width: "20%"}}>
                                                             {invoice.paid ? (
                                                                 <div>
                                                                     <Icon name="check" className="green"/> Paid
@@ -378,6 +429,12 @@ export default class Pay extends React.Component {
                                                                                             onClick={this.onToggleActions.bind(this, invoice.id)}/>
                                                                                 {this.state.open === invoice.id ? (
                                                                                     <div className="dropper">
+                                                                                        {isAdmin() && !invoice.finalized && !invoice.number ? (
+                                                                                            <Button size="sm"
+                                                                                                    onClick={this.onGenerateInvoice.bind(this, invoice.id)}>
+                                                                                                Generate Invoice
+                                                                                            </Button>
+                                                                                        ) : null}
                                                                                         <Button size="sm"
                                                                                                 onClick={this.onUpdateInvoice.bind(this, invoice)}>
                                                                                             Edit payment
@@ -386,13 +443,13 @@ export default class Pay extends React.Component {
                                                                                                 onClick={this.onDeleteInvoice.bind(this, invoice.id)}>
                                                                                             Delete payment
                                                                                         </Button>
-                                                                                        {isPayAdmin() && !invoice.paid ? (
+                                                                                        {isPayAdmin() && invoice.number && !invoice.paid ? (
                                                                                             <Button size="sm"
                                                                                                     onClick={this.onMarkPaid.bind(this, invoice.id)}>
                                                                                                 Mark as paid
                                                                                             </Button>
                                                                                         ) : null}
-                                                                                        {isPayAdmin() && !invoice.paid ? (
+                                                                                        {isPayAdmin() && invoice.number && !invoice.paid ? (
                                                                                             <Button size="sm"
                                                                                                     onClick={this.onMarkArchived.bind(this, invoice.id)}>
                                                                                                 Mark as archived
@@ -440,7 +497,7 @@ export default class Pay extends React.Component {
                                 ) : null}
 
                                 {batchPayouts.length ? (
-                                    <div className="payment-list">
+                                    <div className="payment-list table-responsive">
                                         <Table striped>
                                             <thead>
                                             <tr>
@@ -456,8 +513,8 @@ export default class Pay extends React.Component {
                                             {batchPayouts.map(batch => {
                                                 return (
                                                     <tr key={batch.id}>
-                                                        <td>{batch.title}</td>
-                                                        <td>
+                                                        <td style={{width: "30%"}}>{batch.title}</td>
+                                                        <td style={{width: "20%"}}>
                                                             {batch.invoices.map(item => {
                                                                 return (
                                                                     <div
@@ -465,14 +522,14 @@ export default class Pay extends React.Component {
                                                                 );
                                                             })}
                                                         </td>
-                                                        <td>
+                                                        <td style={{width: "25%"}}>
                                                             {batch.invoices.map(item => {
                                                                 return (
                                                                     <div key={item.id}>{item.user.display_name}</div>
                                                                 );
                                                             })}
                                                         </td>
-                                                        <td>
+                                                        <td style={{width: "10%"}}>
                                                             {batch.invoices.map(item => {
                                                                 return (
                                                                     <div key={item.id}>
@@ -484,7 +541,7 @@ export default class Pay extends React.Component {
                                                                 );
                                                             })}
                                                         </td>
-                                                        <td>
+                                                        <td style={{width: "15%"}}>
                                                             {batch.invoices.map(item => {
                                                                 return (
                                                                     <div key={item.id}>€{item.amount}</div>
@@ -494,7 +551,7 @@ export default class Pay extends React.Component {
                                                                 <div className="subtotal">€{batch.amount}</div>
                                                             )}
                                                         </td>
-                                                        <td>
+                                                        <td style={{width: "10%"}}>
                                                             {isPayAdminOrPM() && !project.archived && !batch.paid && batch.status !== 'approved' ? (
                                                                 <div className="actions text-right">
                                                                     <IconButton name="colon" size={null}
