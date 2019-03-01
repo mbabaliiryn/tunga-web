@@ -393,7 +393,7 @@ export default class Pay extends React.Component {
                                                                     <div className="subtotal">
                                                                         <div className="float-left">Total:</div>
                                                                         <div
-                                                                            className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.tax_amount}</p>):(<p>€{invoice.tax_amount}</p>)}</div>
+                                                                            className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.total_amount}</p>):(<p>€{invoice.total_amount}</p>)}</div>
                                                                     </div>
                                                                 </div>
                                                             )}
