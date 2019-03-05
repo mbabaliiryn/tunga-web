@@ -77,7 +77,7 @@ export default class Pay extends React.Component {
                     },
                     this.props.selectionKey
                 );
-            } else {
+            } else if (data.invoice.type === INVOICE_TYPE_PURCHASE) {
                 let cleanData = [], invoice = data.invoice, payouts = data.payouts;
                 if (payouts && invoice) {
                     Object.keys(payouts).forEach(idx => {
@@ -114,8 +114,8 @@ export default class Pay extends React.Component {
         });
         const {project, InvoiceActions} = this.props;
         openModal(<InvoiceForm invoice={cleanInvoice}
-                               project={project}/>, `Edit ${invoice.type === INVOICE_TYPE_SALE ? 'Payment' : 'Payout'}`).then(data => {
-            if (invoice.type === INVOICE_TYPE_SALE) {
+                               project={project}/>, `Edit ${INVOICE_TYPES[invoice.type]}`).then(data => {
+            if (invoice.type === INVOICE_TYPE_SALE || invoice.type === INVOICE_TYPE_CREDIT_NOTA) {
                 InvoiceActions.updateInvoice(
                     invoice.id,
                     {...data, milestone: data.milestone ? {id: data.milestone.id} : null},
@@ -367,33 +367,43 @@ export default class Pay extends React.Component {
                                                         </td>
                                                         <td style={{width: "15%"}}>
                                                             {invoice.total_amount === invoice.amount ? (
-                                                                <div>{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.amount}</p>):(<p>€{invoice.amount}</p>)}</div>
+                                                                <div>{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
+                                                                    <p>-€{invoice.amount}</p>) : (
+                                                                    <p>€{invoice.amount}</p>)}</div>
                                                             ) : (
                                                                 <div>
                                                                     <div className="clearfix">
                                                                         <div className="float-left">Fee:</div>
                                                                         <div
-                                                                            className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.amount}</p>):(<p>€{invoice.amount}</p>)}</div>
+                                                                            className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
+                                                                            <p>-€{invoice.amount}</p>) : (
+                                                                            <p>€{invoice.amount}</p>)}</div>
                                                                     </div>
                                                                     {Math.round(invoice.processing_fee) ? (
                                                                         <div className="clearfix">
                                                                             <div className="float-left">Processing:
                                                                             </div>
                                                                             <div
-                                                                                className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.processing_fee}</p>):(<p>€{invoice.processing_fee}</p>)}</div>
+                                                                                className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
+                                                                                <p>-€{invoice.processing_fee}</p>) : (
+                                                                                <p>€{invoice.processing_fee}</p>)}</div>
                                                                         </div>
                                                                     ) : null}
                                                                     {Math.round(invoice.tax_amount) ? (
                                                                         <div className="clearfix">
                                                                             <div className="float-left">VAT:</div>
                                                                             <div
-                                                                                className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.tax_amount}</p>):(<p>€{invoice.tax_amount}</p>)}</div>
+                                                                                className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
+                                                                                <p>-€{invoice.tax_amount}</p>) : (
+                                                                                <p>€{invoice.tax_amount}</p>)}</div>
                                                                         </div>
                                                                     ) : null}
                                                                     <div className="subtotal">
                                                                         <div className="float-left">Total:</div>
                                                                         <div
-                                                                            className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (<p>-€{invoice.total_amount}</p>):(<p>€{invoice.total_amount}</p>)}</div>
+                                                                            className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
+                                                                            <p>-€{invoice.total_amount}</p>) : (
+                                                                            <p>€{invoice.total_amount}</p>)}</div>
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -409,7 +419,7 @@ export default class Pay extends React.Component {
                                                                 </div>
                                                             ) : (
                                                                 <div className="clearfix">
-                                                                    {isProjectClient(invoice.project) ? (
+                                                                    {isProjectClient(invoice.project) && invoice.type !== INVOICE_TYPE_CREDIT_NOTA ? (
                                                                         <React.Fragment>
                                                                             <StripeButton size="sm"
                                                                                           amount={invoice.total_amount}
@@ -435,10 +445,12 @@ export default class Pay extends React.Component {
                                                                                                 Generate Invoice
                                                                                             </Button>
                                                                                         ) : null}
-                                                                                        <Button size="sm"
-                                                                                                onClick={this.onUpdateInvoice.bind(this, invoice)}>
-                                                                                            Edit payment
-                                                                                        </Button>
+                                                                                        {isAdmin() && !invoice.finalized && !invoice.number ? (
+                                                                                            <Button size="sm"
+                                                                                                    onClick={this.onUpdateInvoice.bind(this, invoice)}>
+                                                                                                Edit payment
+                                                                                            </Button>
+                                                                                        ) : null}
                                                                                         <Button size="sm"
                                                                                                 onClick={this.onDeleteInvoice.bind(this, invoice.id)}>
                                                                                             Delete payment

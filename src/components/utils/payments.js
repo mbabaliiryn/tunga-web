@@ -1,15 +1,16 @@
 export function filterInvoices(invoices, type) {
-    return invoices.filter(invoice => invoice.type === type );
+    return invoices.filter(invoice => invoice.type === type);
 }
+
 export function filterMultiInvoicesTypes(invoices, type, type1) {
-    return invoices.filter(invoice => invoice.type === type || type1);
+    return invoices.filter(invoice => invoice.type === type || invoice.type === type1);
 }
 
 export function sumInvoices(invoices) {
     return invoices.map(invoice => {
         return invoice.amount || 0;
     }).reduce((total, number) => {
-        return total + Math.round(number*100)/100;
+        return total + Math.round(number * 100) / 100;
     }, 0);
 }
 

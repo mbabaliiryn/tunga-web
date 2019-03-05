@@ -9,7 +9,12 @@ import DateTimePicker from "../../../core/DateTimePicker";
 import UserSelector from "../../../core/UserSelector";
 import MilestoneSelector from "../../../core/MilestoneSelector";
 
-import {INVOICE_TYPE_CREDIT_NOTA, INVOICE_TYPE_SALE, INVOICE_TYPES} from "../../../../actions/utils/api";
+import {
+    INVOICE_TYPE_CREDIT_NOTA,
+    INVOICE_TYPE_PURCHASE,
+    INVOICE_TYPE_SALE,
+    INVOICE_TYPES
+} from "../../../../actions/utils/api";
 import IconButton from "../../../core/IconButton";
 
 export default class InvoiceForm extends React.Component {
@@ -50,10 +55,14 @@ export default class InvoiceForm extends React.Component {
         e.preventDefault();
 
         if (this.props.proceed) {
-            if (this.props.invoice.type === INVOICE_TYPE_SALE || INVOICE_TYPE_CREDIT_NOTA) {
-                this.props.proceed(this.state.invoice);
-            } else {
+            console.log(this.props.invoice.type);
+            if (this.props.invoice.type === INVOICE_TYPE_PURCHASE) {
+                console.log(this.state.invoice);
+                console.log(this.state.payouts);
+
                 this.props.proceed({invoice: this.state.invoice, payouts: this.state.payouts});
+            } else {
+                this.props.proceed(this.state.invoice);
             }
         }
     };
@@ -135,7 +144,7 @@ export default class InvoiceForm extends React.Component {
                                        selected={this.state.invoice.milestone ? [this.state.invoice.milestone] : []}
                                        onChange={milestones => this.onChangeValue('milestone', milestones[0] || null)}/>
                 </FormGroup>
-                {this.state.invoice.type === INVOICE_TYPE_SALE || INVOICE_TYPE_CREDIT_NOTA ? (
+                {this.state.invoice.type === INVOICE_TYPE_SALE || this.state.invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
                     <FormGroup>
                         <label>Amount in EUR</label>
                         <Input type="number"
