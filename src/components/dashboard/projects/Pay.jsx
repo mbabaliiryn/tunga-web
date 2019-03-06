@@ -365,19 +365,19 @@ export default class Pay extends React.Component {
                                                                     {invoice.number}
                                                                 </a>) : null}
                                                         </td>
-                                                        <td style={{width: "15%"}}>
+                                                        <td style={{width: "20%"}}>
                                                             {invoice.total_amount === invoice.amount ? (
                                                                 <div>{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
-                                                                    <p>-€{invoice.amount}</p>) : (
-                                                                    <p>€{invoice.amount}</p>)}</div>
+                                                                    <span>-€{invoice.amount}</span>) : (
+                                                                    <span>€{invoice.amount}</span>)}</div>
                                                             ) : (
                                                                 <div>
                                                                     <div className="clearfix">
                                                                         <div className="float-left">Fee:</div>
                                                                         <div
                                                                             className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
-                                                                            <p>-€{invoice.amount}</p>) : (
-                                                                            <p>€{invoice.amount}</p>)}</div>
+                                                                            <span>-€{invoice.amount}</span>) : (
+                                                                            <span>€{invoice.amount}</span>)}</div>
                                                                     </div>
                                                                     {Math.round(invoice.processing_fee) ? (
                                                                         <div className="clearfix">
@@ -385,8 +385,8 @@ export default class Pay extends React.Component {
                                                                             </div>
                                                                             <div
                                                                                 className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
-                                                                                <p>-€{invoice.processing_fee}</p>) : (
-                                                                                <p>€{invoice.processing_fee}</p>)}</div>
+                                                                                <span>-€{invoice.processing_fee}</span>) : (
+                                                                                <span>€{invoice.processing_fee}</span>)}</div>
                                                                         </div>
                                                                     ) : null}
                                                                     {Math.round(invoice.tax_amount) ? (
@@ -394,21 +394,21 @@ export default class Pay extends React.Component {
                                                                             <div className="float-left">VAT:</div>
                                                                             <div
                                                                                 className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
-                                                                                <p>-€{invoice.tax_amount}</p>) : (
-                                                                                <p>€{invoice.tax_amount}</p>)}</div>
+                                                                                <span>-€{invoice.tax_amount}</span>) : (
+                                                                                <span>€{invoice.tax_amount}</span>)}</div>
                                                                         </div>
                                                                     ) : null}
                                                                     <div className="subtotal">
                                                                         <div className="float-left">Total:</div>
                                                                         <div
                                                                             className="float-right">{invoice.type === INVOICE_TYPE_CREDIT_NOTA ? (
-                                                                            <p>-€{invoice.total_amount}</p>) : (
-                                                                            <p>€{invoice.total_amount}</p>)}</div>
+                                                                            <span>-€{invoice.total_amount}</span>) : (
+                                                                            <span>€{invoice.total_amount}</span>)}</div>
                                                                     </div>
                                                                 </div>
                                                             )}
                                                         </td>
-                                                        <td style={{width: "20%"}}>
+                                                        <td style={{width: "15%"}}>
                                                             {invoice.paid ? (
                                                                 <div>
                                                                     <Icon name="check" className="green"/> Paid
