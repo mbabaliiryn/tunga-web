@@ -309,6 +309,7 @@ export default class Pay extends React.Component {
     render() {
         const {project, invoices, isSaving} = this.props,
             payments = filterMultiInvoicesTypes(invoices, INVOICE_TYPE_SALE, INVOICE_TYPE_CREDIT_NOTA),
+            credi_nota = filterInvoices(invoices, INVOICE_TYPE_CREDIT_NOTA),
             payouts = filterInvoices(invoices, INVOICE_TYPE_PURCHASE);
 
         let batchPayouts = batchInvoices(payouts);
@@ -485,7 +486,7 @@ export default class Pay extends React.Component {
                                                     <td>Total</td>
                                                     <td/>
                                                     <td/>
-                                                    <td>€{sumInvoices(payments)}</td>
+                                                    <td>€{sumInvoices(payments) - sumInvoices(credi_nota)} </td>
                                                     <td/>
                                                 </tr>
                                                 </thead>
