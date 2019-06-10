@@ -3,7 +3,7 @@ Web Client App for [tunga.io](http://tunga.io/)
 
 # Installation
 1. run this command from project root
-```
+```npm istall
 npm install webpack -g
 npm install webpack-dev-server -g
 npm install

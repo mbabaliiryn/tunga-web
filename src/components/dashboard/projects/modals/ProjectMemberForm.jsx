@@ -31,6 +31,20 @@ export default class ProjectMemberForm extends React.Component {
         }
     };
 
+
+    onSelectProject = (selected) => {
+        const {max} = this.props;
+        if (max === 0) {
+            this.setState({selected});
+        } else if(max > 0) {
+            this.setState({selected: selected.slice(0, max)});
+        }
+    };
+
+
+
+
+
     onSave = (e) => {
         e.preventDefault();
 
@@ -49,6 +63,8 @@ export default class ProjectMemberForm extends React.Component {
                             variant='bottom'
                             max={this.props.max}
                         />
+
+                       
                     </FormGroup>
                     <div className="float-right add-button">
                         <Button onClick={this.onSave}>Save</Button>

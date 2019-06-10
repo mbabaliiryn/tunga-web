@@ -38,6 +38,7 @@ class UserSelector extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+
             selected: props.selected || props.value || [],
             selectionKey: props.selectionKey || randomstring.generate(),
             prevKey: null,
@@ -62,8 +63,21 @@ class UserSelector extends React.Component {
 
     getUsers(filter) {
         const {UserActions} = this.props;
-        UserActions.listUsers(filter, this.searchKey(), this.state.prevKey);
+        UserActions.listUsers(filter, this.searchKey(), this.state.prevKey); 
     }
+
+    getProject(filter) {
+        const ProjectTitle = data.filter(projects, props);
+             (projects.id === props.project_id , title = projects.projectName );
+          
+    }
+
+
+
+
+
+
+
 
     onChange(e) {
         let username = e.target.value;
