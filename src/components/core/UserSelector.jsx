@@ -68,11 +68,13 @@ class UserSelector extends React.Component {
 
     getProject(filter) {
         const ProjectTitle = data.filter(projects, props);
-             (projects.id === props.project_id , title = projects.projectName );
-          
+             (projects.id === props.project_id , title = projects.projectName );  
+               
     }
 
 
+    
+        
 
 
 
